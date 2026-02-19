@@ -78,7 +78,7 @@
                         <span>Meme</span>
                     </button>
                     <button class="mode-tab poster flex-1 py-2 sm:py-3 px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-2 font-meme font-medium text-xs sm:text-sm" data-mode="poster" role="tab" aria-selected="false">
-                        <i class="fa-regular fa-rectangle-ad text-pink-400 text-base sm:text-xl" aria-hidden="true"></i>
+                        <i class="fa-regular fa-photo-film text-pink-400 text-base sm:text-xl" aria-hidden="true"></i>
                         <span>Poster</span>
                     </button>
                     <button class="mode-tab remix flex-1 py-2 sm:py-3 px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-2 font-meme font-medium text-xs sm:text-sm" data-mode="remix" role="tab" aria-selected="false">
@@ -93,7 +93,7 @@
                 <!-- History toggle -->
                 <div class="mt-2 flex-shrink-0">
                     <button id="history-toggle" class="text-xs text-amber-600 flex items-center gap-1 hover:text-amber-700 transition-colors mb-1">
-                        <i class="fa-regular fa-clock-rotate-left" aria-hidden="true"></i>
+                        <i class="fa-regular fa-history" aria-hidden="true"></i>
                         <span id="history-label">show history</span>
                     </button>
                     <div id="history-sidebar" role="region" aria-label="Generation history">
@@ -111,7 +111,7 @@
                         aria-label="Creation prompt"
                     >
                     <button id="send-prompt" class="bg-black hover:bg-gray-800 text-white rounded-lg sm:rounded-xl px-3 sm:px-5 py-2 sm:py-3 font-medium flex items-center gap-1 sm:gap-2 hover-lift transition-all shadow-md flex-shrink-0">
-                        <i class="fa-regular fa-paper-plane text-xs sm:text-sm" aria-hidden="true"></i>
+                        <i class="fa-regular fa-location-arrow text-xs sm:text-sm" aria-hidden="true"></i>
                         <span class="text-xs sm:text-sm">send</span>
                     </button>
                 </div>
@@ -140,7 +140,7 @@
                             <i class="fa-regular fa-download text-xs sm:text-sm" aria-hidden="true"></i>
                         </button>
                         <button id="share-btn" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/70 border border-amber-200 flex items-center justify-center hover:bg-white hover-lift" title="Share image" aria-label="Share image">
-                            <i class="fa-solid fa-share-nodes text-xs sm:text-sm" aria-hidden="true"></i>
+                            <i class="fa-solid fa-share text-xs sm:text-sm" aria-hidden="true"></i>
                         </button>
                         <a href="gallery.html" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/70 border border-amber-200 flex items-center justify-center hover:bg-white hover-lift" title="View gallery" aria-label="View gallery">
                             <i class="fa-regular fa-images text-xs sm:text-sm" aria-hidden="true"></i>
@@ -176,11 +176,11 @@
                 <!-- Quick actions -->
                 <div class="flex justify-end gap-1 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
                     <button id="regenerate-btn" class="px-2 sm:px-4 py-1 sm:py-2 bg-white/70 border border-amber-200 rounded-full text-xs hover:bg-white hover-lift flex items-center gap-1">
-                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
                         <span class="hidden xs:inline">regenerate</span>
                     </button>
                     <button id="edit-btn" class="px-2 sm:px-4 py-1 sm:py-2 bg-black text-white rounded-full text-xs hover:bg-gray-800 hover-lift flex items-center gap-1">
-                        <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
+                        <i class="fa-regular fa-pen" aria-hidden="true"></i>
                         <span class="hidden xs:inline">edit in studio</span>
                     </button>
                 </div>
@@ -220,7 +220,7 @@
                 enhancePrompt: p => `meme style: ${p}, funny meme with impact font, top and bottom text, humorous`
             },
             poster: {
-                icon: 'fa-rectangle-ad', iconLib: 'fa-regular',
+                icon: 'fa-photo-film', iconLib: 'fa-regular',
                 badgeClass: 'bg-pink-100 text-pink-800 border-pink-300',
                 badgeText: 'poster lab · minimal',
                 suggestions: ['jazz night poster', 'tech conference 2025', 'art gallery opening', 'film festival'],

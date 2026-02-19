@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MEMECRAFT AI Templates — browse 20+ starting templates for memes, posters and remixes.">
+    <title>MEMECRAFT AI · Templates</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;1,14..32,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Template card */
+        .template-card {
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.75);
+            backdrop-filter: blur(10px);
+            transition: all 0.25s cubic-bezier(0.2,0,0,1);
+            cursor: pointer;
+        }
+        .template-card:hover { transform: scale(1.03) translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.18); }
+        .template-card .use-btn { opacity: 0; transition: opacity 0.2s ease; }
+        .template-card:hover .use-btn { opacity: 1; }
+
+        /* Filter tabs */
+        .filter-tab { transition: all 0.2s ease; }
+        .filter-tab.active { background: black; color: white; }
+
+        /* Search input */
+        #search-input:focus { box-shadow: 0 0 0 2px rgba(251,191,36,0.4); outline: none; border-color: #fbbf24; }
+
+        /* Mode colour map */
+        .badge-meme   { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .badge-poster { background: #fce7f3; color: #9d174d; border: 1px solid #f9a8d4; }
+        .badge-remix  { background: #ede9fe; color: #4c1d95; border: 1px solid #c4b5fd; }
+
+        /* Preview bg colours per template */
+        .bg-meme-warm   { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+        .bg-meme-cool   { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .bg-poster-dark { background: linear-gradient(135deg, #1e1b4b, #312e81); }
+        .bg-poster-rose { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+        .bg-remix-vibe  { background: linear-gradient(135deg, #7c3aed, #db2777); }
+        .bg-remix-retro { background: linear-gradient(135deg, #059669, #0891b2); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800 antialiased overflow-x-hidden">
+
+    <div id="nav-root"></div>
+
+    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+
+        <!-- Page header -->
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+            <div>
+                <h1 class="font-meme text-3xl sm:text-4xl font-bold flex items-center gap-3">
+                    <i class="fa-regular fa-layer-group text-amber-500" aria-hidden="true"></i> Templates
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">Pick a starting point — AI does the rest.</p>
+            </div>
+            <!-- Search -->
+            <div class="relative w-full sm:w-64">
+                <i class="fa-regular fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" aria-hidden="true"></i>
+                <input
+                    id="search-input"
+                    type="search"
+                    placeholder="search templates..."
+                    class="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/70 border border-amber-200 text-sm placeholder:text-gray-400 transition-all"
+                    aria-label="Search templates"
+                >
+            </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="flex gap-2 mb-8 flex-wrap" role="tablist" aria-label="Filter templates">
+            <button class="filter-tab active px-4 py-2 rounded-full text-sm font-meme border border-gray-200 bg-white/60" data-filter="all" role="tab" aria-selected="true">All</button>
+            <button class="filter-tab px-4 py-2 rounded-full text-sm font-meme border border-amber-200 bg-white/60" data-filter="meme" role="tab" aria-selected="false">
+                <i class="fa-regular fa-face-smile text-amber-500 mr-1" aria-hidden="true"></i>Memes
+            </button>
+            <button class="filter-tab px-4 py-2 rounded-full text-sm font-meme border border-pink-200 bg-white/60" data-filter="poster" role="tab" aria-selected="false">
+                <i class="fa-regular fa-rectangle-ad text-pink-400 mr-1" aria-hidden="true"></i>Posters
+            </button>
+            <button class="filter-tab px-4 py-2 rounded-full text-sm font-meme border border-indigo-200 bg-white/60" data-filter="remix" role="tab" aria-selected="false">
+                <i class="fa-solid fa-wand-sparkles text-indigo-400 mr-1" aria-hidden="true"></i>Remixes
+            </button>
+        </div>
+
+        <!-- Template grid -->
+        <div id="template-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" aria-label="Template list"></div>
+
+        <!-- Empty state (search no results) -->
+        <div id="no-results" class="hidden flex-col items-center justify-center py-16 text-center">
+            <i class="fa-regular fa-face-frown-open text-5xl text-amber-300 mb-4" aria-hidden="true"></i>
+            <p class="font-meme text-lg text-gray-500">no templates match "<span id="no-results-term"></span>"</p>
+            <button id="clear-search" class="mt-4 text-amber-600 text-sm hover:underline">clear search</button>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="mode-toast" role="status" aria-live="polite">
+        <i class="fa-regular fa-bell mr-2" aria-hidden="true"></i>
+        <span id="toast-message">Done</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-4 py-4 text-xs text-gray-400 flex flex-wrap justify-between items-center gap-2">
+        <span>© 2025 · MEMECRAFT AI templates</span>
+        <a href="studio.html" class="text-amber-600 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> open studio
+        </a>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="nav.js"></script>
+    <script>
+    (function () {
+        renderNav('templates');
+
+        // ==================== TEMPLATE DATA ====================
+        const TEMPLATES = [
+            // MEMES
+            { id: 1, mode: 'meme', name: 'Distracted Boyfriend',  emoji: '🙄', bg: 'bg-meme-warm',   tags: ['classic','relationship'], prompt: 'distracted boyfriend meme classy style' },
+            { id: 2, mode: 'meme', name: 'Drake Hotline Bling',   emoji: '🕺', bg: 'bg-meme-warm',   tags: ['classic','choice'],       prompt: 'drake hotline bling meme with classy vibes' },
+            { id: 3, mode: 'meme', name: 'Woman Yelling at Cat',  emoji: '😾', bg: 'bg-meme-cool',   tags: ['classic','argument'],     prompt: 'woman yelling at cat meme premium style' },
+            { id: 4, mode: 'meme', name: 'This Is Fine 🔥',       emoji: '🔥', bg: 'bg-meme-warm',   tags: ['relatable','anxiety'],    prompt: 'this is fine dog meme classy stylized' },
+            { id: 5, mode: 'meme', name: 'Cat with Sunglasses',   emoji: '😎', bg: 'bg-meme-cool',   tags: ['cat','cool'],             prompt: 'cool cat with sunglasses meme premium' },
+            { id: 6, mode: 'meme', name: 'Side Eye Chloe',        emoji: '👀', bg: 'bg-meme-warm',   tags: ['reaction','classic'],     prompt: 'side eye chloe meme classy' },
+            { id: 7, mode: 'meme', name: 'Surprised Pikachu',     emoji: '⚡', bg: 'bg-meme-cool',   tags: ['reaction','classic'],     prompt: 'surprised pikachu meme classy illustration' },
+            { id: 8, mode: 'meme', name: 'Two Buttons',           emoji: '🤔', bg: 'bg-meme-warm',   tags: ['choice','relatable'],     prompt: 'two buttons meme sweating guy classy style' },
+
+            // POSTERS
+            { id: 9,  mode: 'poster', name: 'Jazz Night',          emoji: '🎷', bg: 'bg-poster-dark', tags: ['music','event'],    prompt: 'jazz night minimal poster elegant dark background' },
+            { id: 10, mode: 'poster', name: 'Tech Conference',      emoji: '💻', bg: 'bg-poster-dark', tags: ['tech','event'],     prompt: 'tech conference 2025 minimal poster futuristic' },
+            { id: 11, mode: 'poster', name: 'Art Gallery Opening',  emoji: '🖼️', bg: 'bg-poster-rose', tags: ['art','event'],      prompt: 'art gallery opening minimal elegant poster' },
+            { id: 12, mode: 'poster', name: 'Film Festival',        emoji: '🎬', bg: 'bg-poster-dark', tags: ['film','event'],     prompt: 'film festival minimal poster cinematic' },
+            { id: 13, mode: 'poster', name: 'Brand Launch',         emoji: '🚀', bg: 'bg-poster-dark', tags: ['brand','modern'],   prompt: 'brand launch product reveal minimal poster' },
+            { id: 14, mode: 'poster', name: 'Club Night',           emoji: '🎧', bg: 'bg-poster-dark', tags: ['music','party'],    prompt: 'club night electronic music minimal neon poster' },
+            { id: 15, mode: 'poster', name: 'Café Brunch',          emoji: '☕', bg: 'bg-poster-rose', tags: ['food','soft'],      prompt: 'café brunch sunday soft minimal poster pastel' },
+            { id: 16, mode: 'poster', name: 'Workshop Flyer',       emoji: '🛠️', bg: 'bg-poster-rose', tags: ['education','event'],'prompt': 'creative workshop flyer minimal bold typography poster' },
+
+            // REMIXES
+            { id: 17, mode: 'remix', name: 'Vaporwave',    emoji: '🌊', bg: 'bg-remix-vibe',  tags: ['aesthetic','retro'],  prompt: 'vaporwave aesthetic style purple pink neon' },
+            { id: 18, mode: 'remix', name: 'Gold Foil',    emoji: '✨', bg: 'bg-meme-warm',   tags: ['luxury','texture'],   prompt: 'gold foil luxury texture metallic effect' },
+            { id: 19, mode: 'remix', name: 'Glitch Art',   emoji: '📡', bg: 'bg-remix-vibe',  tags: ['glitch','digital'],   prompt: 'glitch effect digital art scanlines distortion' },
+            { id: 20, mode: 'remix', name: 'Punk Zine',    emoji: '✂️', bg: 'bg-remix-retro', tags: ['punk','collage'],     prompt: 'punk zine collage style cut-out typography raw' },
+            { id: 21, mode: 'remix', name: 'Y2K Chrome',   emoji: '💿', bg: 'bg-remix-retro', tags: ['y2k','chrome'],       prompt: 'y2k chrome metallic reflective aesthetic 2000s' },
+            { id: 22, mode: 'remix', name: 'Risograph',    emoji: '🖨️', bg: 'bg-poster-rose', tags: ['print','retro'],      prompt: 'risograph print style two-colour halftone texture' },
+        ];
+
+        let activeFilter  = 'all';
+        let searchQuery   = '';
+
+        // ==================== TOAST ====================
+        function showToast(msg) {
+            const toast = document.getElementById('mode-toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ==================== RENDER ====================
+        function renderTemplates() {
+            const grid      = document.getElementById('template-grid');
+            const noResults = document.getElementById('no-results');
+            const q         = searchQuery.toLowerCase();
+
+            let filtered = TEMPLATES;
+            if (activeFilter !== 'all') filtered = filtered.filter(t => t.mode === activeFilter);
+            if (q) filtered = filtered.filter(t =>
+                t.name.toLowerCase().includes(q) ||
+                t.tags.some(tag => tag.includes(q)) ||
+                t.mode.includes(q)
+            );
+
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                noResults.classList.remove('hidden');
+                noResults.classList.add('flex');
+                document.getElementById('no-results-term').textContent = searchQuery;
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            noResults.classList.remove('flex');
+
+            filtered.forEach((t, idx) => {
+                const card = document.createElement('div');
+                card.className = 'template-card rounded-2xl overflow-hidden fade-in';
+                card.style.animationDelay = `${idx * 0.04}s`;
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('aria-label', `Use template: ${t.name}`);
+
+                card.innerHTML = `
+                    <div class="relative aspect-square ${t.bg} flex items-center justify-center overflow-hidden">
+                        <span class="text-5xl">${t.emoji}</span>
+                        <!-- hover overlay -->
+                        <div class="use-btn absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span class="bg-amber-400 text-black font-meme font-semibold px-4 py-2 rounded-full text-xs shadow-lg flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-sparkles" aria-hidden="true"></i> use template
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-2.5">
+                        <p class="text-xs font-meme font-bold truncate text-gray-800">${t.name}</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-meme badge-${t.mode}">${t.mode}</span>
+                            <span class="text-[10px] text-gray-400">${t.tags[0]}</span>
+                        </div>
+                    </div>`;
+
+                const goToStudio = () => {
+                    showToast(`Opening: ${t.name}`);
+                    setTimeout(() => {
+                        window.location.href = `studio.html?mode=${t.mode}&prompt=${encodeURIComponent(t.prompt)}`;
+                    }, 400);
+                };
+
+                card.addEventListener('click', goToStudio);
+                card.addEventListener('keydown', e => { if (e.key === 'Enter') goToStudio(); });
+                grid.appendChild(card);
+            });
+        }
+
+        // ==================== FILTER TABS ====================
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+                activeFilter = tab.dataset.filter;
+                renderTemplates();
+            });
+        });
+
+        // ==================== SEARCH ====================
+        let searchDebounce;
+        document.getElementById('search-input').addEventListener('input', e => {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                renderTemplates();
+            }, 200);
+        });
+
+        document.getElementById('clear-search').addEventListener('click', () => {
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+            renderTemplates();
+        });
+
+        // INIT
+        renderTemplates();
+        console.log('✨ MEMECRAFT AI templates ready');
+    })();
+    </script>
+</body>
+</html>

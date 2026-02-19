@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="MEMECRAFT AI Studio — Create memes, posters and remixes with AI.">
+    <title>MEMECRAFT AI · Studio</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;1,14..32,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Studio-specific */
+        body { overflow: hidden; }
+        @media (max-width: 1023px) { body { overflow: auto; } }
+
+        .chat-bubble-user { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 24px 24px 8px 24px; }
+        .chat-bubble-ai   { background: white; border: 1px solid rgba(255,255,240,0.8); border-radius: 24px 24px 24px 8px; }
+
+        /* Mode tabs */
+        .mode-tab { transition: all 0.2s ease; border-bottom: 3px solid transparent; opacity: 0.7; }
+        .mode-tab.active { opacity: 1; background: linear-gradient(to top, rgba(251,191,36,0.1), transparent); }
+        .mode-tab.meme.active   { border-bottom-color: #f59e0b; }
+        .mode-tab.poster.active { border-bottom-color: #ec4899; }
+        .mode-tab.remix.active  { border-bottom-color: #818cf8; }
+
+        /* Suggestion pills */
+        .suggestion-pill {
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(251,191,36,0.3);
+            transition: all 0.15s; cursor: pointer;
+        }
+        .suggestion-pill:hover { background: white; border-color: #fbbf24; transform: translateY(-1px); }
+
+        /* Prompt input focus */
+        #prompt-input:focus { box-shadow: 0 0 0 2px rgba(251,191,36,0.4); outline: none; }
+
+        /* Left panel flex */
+        .left-panel { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+
+        /* History sidebar */
+        #history-sidebar {
+            max-height: 0; overflow: hidden; transition: max-height 0.35s ease;
+        }
+        #history-sidebar.open { max-height: 300px; overflow-y: auto; }
+
+        @media (max-width: 1023px) {
+            .studio-grid { display: flex; flex-direction: column; gap: 1rem; }
+            .left-panel  { height: 500px; min-height: 450px; }
+            body { overflow: auto; }
+        }
+        @media (max-width: 640px) {
+            .left-panel { height: 450px; }
+            .chat-bubble-user, .chat-bubble-ai { max-width: 85% !important; font-size: 0.85rem; }
+        }
+        @media (max-width: 380px) {
+            .mode-tab span { display: none; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800 antialiased overflow-x-hidden">
+
+    <!-- Nav -->
+    <div id="nav-root"></div>
+
+    <!-- Main: dual-panel studio layout -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4" style="min-height:0;">
+        <div class="studio-grid lg:grid lg:grid-cols-12 gap-4 lg:gap-6 lg:h-[calc(100vh-9rem)]">
+
+            <!-- ===== LEFT PANEL: Chat + Input ===== -->
+            <div class="left-panel lg:col-span-5 glass-premium rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-white/70 shadow-xl overflow-hidden w-full">
+
+                <!-- Mode tabs -->
+                <div class="flex border-b border-amber-200/50 mb-3 sm:mb-4 flex-shrink-0" role="tablist" aria-label="Creation mode">
+                    <button class="mode-tab meme flex-1 py-2 sm:py-3 px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-2 font-meme font-medium text-xs sm:text-sm active" data-mode="meme" role="tab" aria-selected="true" aria-controls="chat-messages">
+                        <i class="fa-regular fa-face-smile text-amber-500 text-base sm:text-xl" aria-hidden="true"></i>
+                        <span>Meme</span>
+                    </button>
+                    <button class="mode-tab poster flex-1 py-2 sm:py-3 px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-2 font-meme font-medium text-xs sm:text-sm" data-mode="poster" role="tab" aria-selected="false">
+                        <i class="fa-regular fa-rectangle-ad text-pink-400 text-base sm:text-xl" aria-hidden="true"></i>
+                        <span>Poster</span>
+                    </button>
+                    <button class="mode-tab remix flex-1 py-2 sm:py-3 px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-2 font-meme font-medium text-xs sm:text-sm" data-mode="remix" role="tab" aria-selected="false">
+                        <i class="fa-solid fa-wand-sparkles text-indigo-400 text-base sm:text-xl" aria-hidden="true"></i>
+                        <span>Remix</span>
+                    </button>
+                </div>
+
+                <!-- Chat messages (scrollable) -->
+                <div class="flex-1 min-h-0 overflow-y-auto space-y-3 sm:space-y-4 pr-1 sm:pr-2" id="chat-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
+
+                <!-- History toggle -->
+                <div class="mt-2 flex-shrink-0">
+                    <button id="history-toggle" class="text-xs text-amber-600 flex items-center gap-1 hover:text-amber-700 transition-colors mb-1">
+                        <i class="fa-regular fa-clock-rotate-left" aria-hidden="true"></i>
+                        <span id="history-label">show history</span>
+                    </button>
+                    <div id="history-sidebar" role="region" aria-label="Generation history">
+                        <div id="history-list" class="grid grid-cols-3 gap-2 pb-2"></div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="mt-2 sm:mt-3 flex items-center gap-1 sm:gap-2 meme-shine rounded-xl sm:rounded-2xl bg-white/60 p-1 border border-white/80 backdrop-blur-sm flex-shrink-0">
+                    <input
+                        type="text"
+                        id="prompt-input"
+                        placeholder="describe something to create..."
+                        class="flex-1 bg-transparent border-0 text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3.5 placeholder:text-gray-400 focus:outline-none"
+                        aria-label="Creation prompt"
+                    >
+                    <button id="send-prompt" class="bg-black hover:bg-gray-800 text-white rounded-lg sm:rounded-xl px-3 sm:px-5 py-2 sm:py-3 font-medium flex items-center gap-1 sm:gap-2 hover-lift transition-all shadow-md flex-shrink-0">
+                        <i class="fa-regular fa-paper-plane text-xs sm:text-sm" aria-hidden="true"></i>
+                        <span class="text-xs sm:text-sm">send</span>
+                    </button>
+                </div>
+
+                <!-- Suggestion pills -->
+                <div class="flex flex-wrap gap-1 sm:gap-2 mt-2 sm:mt-3 justify-start flex-shrink-0" id="suggestions-container" aria-label="Quick suggestions"></div>
+            </div>
+
+            <!-- ===== RIGHT PANEL: Preview ===== -->
+            <div class="lg:col-span-7 flex flex-col w-full min-h-0">
+
+                <!-- Top bar -->
+                <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span id="mode-context-badge" class="font-meme bg-amber-100 text-amber-800 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm border border-amber-300 shadow-sm flex items-center gap-1 sm:gap-2">
+                            <i class="fa-regular fa-face-smile" aria-hidden="true"></i>
+                            <span>meme mode · ready</span>
+                        </span>
+                        <span id="generating-text" class="text-xs text-gray-400 flex items-center gap-1" aria-live="polite">
+                            <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                            <span class="hidden xs:inline">AI ready</span>
+                        </span>
+                    </div>
+                    <div class="flex gap-1 sm:gap-2">
+                        <button id="download-btn" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/70 border border-amber-200 flex items-center justify-center hover:bg-white hover-lift" title="Download image" aria-label="Download image">
+                            <i class="fa-regular fa-download text-xs sm:text-sm" aria-hidden="true"></i>
+                        </button>
+                        <button id="share-btn" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/70 border border-amber-200 flex items-center justify-center hover:bg-white hover-lift" title="Share image" aria-label="Share image">
+                            <i class="fa-solid fa-share-nodes text-xs sm:text-sm" aria-hidden="true"></i>
+                        </button>
+                        <a href="gallery.html" class="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/70 border border-amber-200 flex items-center justify-center hover:bg-white hover-lift" title="View gallery" aria-label="View gallery">
+                            <i class="fa-regular fa-images text-xs sm:text-sm" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Preview card -->
+                <div class="flex-1 glass-premium rounded-2xl sm:rounded-3xl border border-white/70 shadow-xl overflow-hidden min-h-0 flex flex-col">
+                    <div class="relative flex-1 flex items-center justify-center p-4" id="preview-container">
+                        <!-- Ambient blobs -->
+                        <div class="absolute -top-10 -left-10 w-40 h-40 bg-amber-300/20 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+                        <div class="absolute -bottom-10 -right-10 w-60 h-60 bg-purple-300/20 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+                        <!-- Preview output -->
+                        <div class="relative z-10 w-full flex items-center justify-center">
+                            <div id="preview-content" class="w-full max-w-[400px] mx-auto">
+                                <div class="aspect-square w-full rounded-2xl bg-gradient-to-br from-amber-100 to-pink-100 flex flex-col items-center justify-center p-6 shadow-inner">
+                                    <i class="fa-regular fa-image text-6xl text-amber-500/50 mb-3" aria-hidden="true"></i>
+                                    <p class="text-sm text-gray-500 font-meme text-center">describe something<br>to generate</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading overlay -->
+                        <div id="loading-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-20 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true">
+                            <div class="loading-spinner"></div>
+                            <p class="text-sm font-meme text-amber-700 mt-3">AI is crafting your masterpiece...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick actions -->
+                <div class="flex justify-end gap-1 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
+                    <button id="regenerate-btn" class="px-2 sm:px-4 py-1 sm:py-2 bg-white/70 border border-amber-200 rounded-full text-xs hover:bg-white hover-lift flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                        <span class="hidden xs:inline">regenerate</span>
+                    </button>
+                    <button id="edit-btn" class="px-2 sm:px-4 py-1 sm:py-2 bg-black text-white rounded-full text-xs hover:bg-gray-800 hover-lift flex items-center gap-1">
+                        <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
+                        <span class="hidden xs:inline">edit in studio</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="mode-toast" role="status" aria-live="polite">
+        <i class="fa-regular fa-bell mr-2" aria-hidden="true"></i>
+        <span id="toast-message">Mode changed</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 text-xs text-gray-400 flex justify-between flex-shrink-0">
+        <span>© 2025 · MEMECRAFT AI studio</span>
+        <span class="flex items-center gap-1">
+            <i class="fa-regular fa-database" aria-hidden="true"></i>
+            <span>3 modes · IndexedDB</span>
+        </span>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="nav.js"></script>
+    <script>
+    (function () {
+        renderNav('studio');
+
+        // ==================== MODE CONFIG ====================
+        const modeConfig = {
+            meme: {
+                icon: 'fa-face-smile', iconLib: 'fa-regular',
+                badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+                badgeText: 'meme mode · classic',
+                suggestions: ['cat meme with sunglasses', 'distracted boyfriend but classy', 'drake hotline bling', 'woman yelling at cat'],
+                initialMessage: '🎭 **meme mode**: describe a meme format or idea. I\'ll generate a humorous meme image.',
+                enhancePrompt: p => `meme style: ${p}, funny meme with impact font, top and bottom text, humorous`
+            },
+            poster: {
+                icon: 'fa-rectangle-ad', iconLib: 'fa-regular',
+                badgeClass: 'bg-pink-100 text-pink-800 border-pink-300',
+                badgeText: 'poster lab · minimal',
+                suggestions: ['jazz night poster', 'tech conference 2025', 'art gallery opening', 'film festival'],
+                initialMessage: '🖼️ **poster mode**: describe an event or theme. I\'ll generate a minimal, elegant poster.',
+                enhancePrompt: p => `poster design: ${p}, minimalist poster with elegant typography, event flyer, high quality graphic design`
+            },
+            remix: {
+                icon: 'fa-wand-sparkles', iconLib: 'fa-solid',
+                badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+                badgeText: 'remix · style transfer',
+                suggestions: ['make it vaporwave', 'gold foil texture', 'glitch effect', 'punk zine style'],
+                initialMessage: '🌀 **remix mode**: describe a style to apply. I\'ll remix the base image accordingly.',
+                enhancePrompt: p => `remix style: ${p}, artistic style transfer, high contrast, textured, creative effect`
+            }
+        };
+
+        // ==================== DOM ====================
+        const modeTabs       = document.querySelectorAll('.mode-tab');
+        const modeBadge      = document.getElementById('mode-context-badge');
+        const chatMessages   = document.getElementById('chat-messages');
+        const promptInput    = document.getElementById('prompt-input');
+        const sendBtn        = document.getElementById('send-prompt');
+        const suggestionsEl  = document.getElementById('suggestions-container');
+        const previewDiv     = document.getElementById('preview-content');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const generatingText = document.getElementById('generating-text');
+        const downloadBtn    = document.getElementById('download-btn');
+        const shareBtn       = document.getElementById('share-btn');
+        const regenerateBtn  = document.getElementById('regenerate-btn');
+        const editBtn        = document.getElementById('edit-btn');
+        const historyToggle  = document.getElementById('history-toggle');
+        const historySidebar = document.getElementById('history-sidebar');
+        const historyList    = document.getElementById('history-list');
+
+        let currentMode        = 'meme';
+        let lastGeneratedImage = null;
+        let lastPrompt         = '';
+
+        // ==================== UTILS ====================
+        function setLoading(on) {
+            loadingOverlay.classList.toggle('opacity-0', !on);
+            loadingOverlay.classList.toggle('pointer-events-none', !on);
+            loadingOverlay.classList.toggle('opacity-100', on);
+            loadingOverlay.setAttribute('aria-hidden', String(!on));
+            generatingText.innerHTML = on
+                ? '<i class="fa-solid fa-bolt" aria-hidden="true"></i> <span>generating...</span>'
+                : '<i class="fa-solid fa-bolt" aria-hidden="true"></i> <span>AI ready</span>';
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('mode-toast');
+            document.getElementById('toast-message').textContent = `Mode: ${msg}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function appendMessage(sender, text, isSystem = false) {
+            const wrap = document.createElement('div');
+            wrap.className = `flex items-start gap-2 sm:gap-3 fade-in ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+
+            const av = document.createElement('div');
+            av.className = `w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-md flex-shrink-0 ${
+                sender === 'user'
+                    ? 'bg-amber-300 text-amber-800 border border-amber-400'
+                    : 'bg-gradient-to-br from-amber-400 to-purple-400 text-white'
+            }`;
+            av.innerHTML = sender === 'user'
+                ? '<i class="fa-regular fa-user" aria-hidden="true"></i>'
+                : '<i class="fa-regular fa-face-smile" aria-hidden="true"></i>';
+            av.setAttribute('aria-hidden', 'true');
+
+            const bubble = document.createElement('div');
+            bubble.className = `${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} p-3 max-w-[85%] shadow-sm`;
+
+            const p = document.createElement('p');
+            p.className = 'text-xs sm:text-sm text-gray-700';
+            p.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<span class="font-meme font-semibold">$1</span>');
+
+            const ts = document.createElement('span');
+            ts.className = 'text-[8px] sm:text-[10px] text-gray-400 mt-1 block';
+            ts.textContent = isSystem ? 'system' : 'just now';
+
+            bubble.appendChild(p);
+            bubble.appendChild(ts);
+            wrap.appendChild(av);
+            wrap.appendChild(bubble);
+            chatMessages.appendChild(wrap);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ==================== HISTORY ====================
+        async function loadHistory() {
+            const items = await MemecraftDB.getAll();
+            historyList.innerHTML = '';
+            if (items.length === 0) {
+                historyList.innerHTML = '<p class="text-xs text-gray-400 col-span-3 text-center py-2">No history yet.</p>';
+                return;
+            }
+            items.slice(0, 9).forEach(item => {
+                const thumb = document.createElement('div');
+                thumb.className = 'relative group cursor-pointer rounded-xl overflow-hidden aspect-square bg-amber-50';
+                thumb.innerHTML = `
+                    <img src="data:image/png;base64,${item.imageBase64}" alt="History item" class="w-full h-full object-cover" loading="lazy">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-1">
+                        <span class="text-white text-[9px] truncate w-full font-meme">${item.prompt.slice(0,20)}</span>
+                    </div>`;
+                thumb.addEventListener('click', () => {
+                    lastGeneratedImage = item.imageBase64;
+                    lastPrompt = item.prompt;
+                    previewDiv.innerHTML = `
+                        <div class="aspect-square w-full rounded-2xl overflow-hidden shadow-lg bg-white/80">
+                            <img src="data:image/png;base64,${item.imageBase64}" alt="${item.prompt}" class="w-full h-full object-contain">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 font-meme text-center">📂 "${item.prompt.slice(0,30)}${item.prompt.length > 30 ? '...' : ''}"</p>`;
+                });
+                historyList.appendChild(thumb);
+            });
+        }
+
+        historyToggle.addEventListener('click', () => {
+            const isOpen = historySidebar.classList.toggle('open');
+            document.getElementById('history-label').textContent = isOpen ? 'hide history' : 'show history';
+            if (isOpen) loadHistory();
+        });
+
+        // ==================== MODE ====================
+        function setActiveMode(mode, addMessage = true) {
+            const prev = currentMode;
+            currentMode = mode;
+
+            modeTabs.forEach(tab => {
+                const isActive = tab.dataset.mode === mode;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', String(isActive));
+            });
+
+            const cfg = modeConfig[mode];
+
+            modeBadge.innerHTML = `<i class="${cfg.iconLib} ${cfg.icon}" aria-hidden="true"></i> <span>${cfg.badgeText}</span>`;
+            modeBadge.className = `font-meme px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm border shadow-sm flex items-center gap-1 sm:gap-2 ${cfg.badgeClass}`;
+
+            suggestionsEl.innerHTML = '';
+            cfg.suggestions.forEach(s => {
+                const pill = document.createElement('button');
+                pill.className = 'suggestion-pill px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-meme hover-lift';
+                pill.textContent = s;
+                pill.addEventListener('click', () => { promptInput.value = s; handleSend(); });
+                suggestionsEl.appendChild(pill);
+            });
+
+            // Reset preview
+            previewDiv.innerHTML = `
+                <div class="aspect-square w-full rounded-2xl bg-gradient-to-br from-amber-100 to-pink-100 flex flex-col items-center justify-center p-6 shadow-inner">
+                    <i class="fa-regular fa-image text-6xl text-amber-500/50 mb-3" aria-hidden="true"></i>
+                    <p class="text-sm text-gray-500 font-meme text-center">describe a ${mode}<br>to generate</p>
+                </div>`;
+            lastGeneratedImage = null;
+
+            if (addMessage) {
+                chatMessages.innerHTML = '';
+                appendMessage('ai', cfg.initialMessage, true);
+            }
+
+            if (prev !== mode) showToast(mode);
+        }
+
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => setActiveMode(tab.dataset.mode));
+        });
+
+        // ==================== SEND ====================
+        async function handleSend() {
+            const userPrompt = promptInput.value.trim();
+            if (!userPrompt) return;
+
+            lastPrompt = userPrompt;
+            appendMessage('user', userPrompt);
+            promptInput.value = '';
+            setLoading(true);
+            appendMessage('ai', '✨ generating your masterpiece...', true);
+
+            const enhancedPrompt = modeConfig[currentMode].enhancePrompt(userPrompt);
+
+            try {
+                const response = await fetch(MEMECRAFT_CONFIG.generateURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: enhancedPrompt })
+                });
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    appendMessage('ai', '⚠️ generation failed. check console.', true);
+                    console.error('API error:', err);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.image) {
+                    lastGeneratedImage = data.image;
+                    await MemecraftDB.save(data.image, currentMode, userPrompt);
+
+                    previewDiv.innerHTML = `
+                        <div class="aspect-square w-full rounded-2xl overflow-hidden shadow-lg bg-white/80">
+                            <img src="data:image/png;base64,${data.image}" alt="${userPrompt}" class="w-full h-full object-contain">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 font-meme text-center">✨ "${userPrompt.slice(0,30)}${userPrompt.length > 30 ? '...' : ''}"</p>`;
+
+                    appendMessage('ai', `✅ **${currentMode}** ready. Download or regenerate.`, true);
+
+                    // Refresh history if open
+                    if (historySidebar.classList.contains('open')) loadHistory();
+                } else {
+                    appendMessage('ai', '⚠️ no image returned from API.', true);
+                }
+            } catch (err) {
+                console.error(err);
+                appendMessage('ai', '🚨 cannot reach backend. is your server running?', true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        promptInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
+
+        // ==================== DOWNLOAD ====================
+        downloadBtn.addEventListener('click', () => {
+            if (!lastGeneratedImage) { appendMessage('ai', '⚠️ nothing to download yet.', true); return; }
+            const a = document.createElement('a');
+            a.href = `data:image/png;base64,${lastGeneratedImage}`;
+            a.download = `memecraft-${currentMode}-${Date.now()}.png`;
+            a.click();
+            appendMessage('ai', '📥 download started.', true);
+        });
+
+        // ==================== SHARE ====================
+        shareBtn.addEventListener('click', () => {
+            if (!lastGeneratedImage) { appendMessage('ai', '⚠️ nothing to share yet.', true); return; }
+            if (navigator.share) {
+                fetch(`data:image/png;base64,${lastGeneratedImage}`)
+                    .then(r => r.blob())
+                    .then(blob => {
+                        const file = new File([blob], 'memecraft.png', { type: 'image/png' });
+                        navigator.share({ title: 'MEMECRAFT AI', text: 'Check out my AI creation!', files: [file] })
+                            .catch(() => appendMessage('ai', '📋 share cancelled.', true));
+                    });
+            } else {
+                appendMessage('ai', '📋 Web Share not supported on this browser. Download and share manually.', true);
+            }
+        });
+
+        // ==================== REGENERATE & EDIT ====================
+        regenerateBtn.addEventListener('click', () => {
+            if (!lastPrompt) { appendMessage('ai', '⚠️ no previous prompt. type something first.', true); return; }
+            promptInput.value = lastPrompt;
+            handleSend();
+        });
+
+        editBtn.addEventListener('click', () => {
+            appendMessage('ai', '🎨 edit studio feature coming soon!', true);
+        });
+
+        // ==================== INIT from URL params ====================
+        const params = new URLSearchParams(window.location.search);
+        const modeParam   = params.get('mode');
+        const promptParam = params.get('prompt');
+
+        const validMode = ['meme', 'poster', 'remix'].includes(modeParam) ? modeParam : 'meme';
+        setActiveMode(validMode, true);
+
+        if (promptParam) {
+            promptInput.value = decodeURIComponent(promptParam);
+            setTimeout(() => handleSend(), 300);
+        }
+
+        console.log('✨ MEMECRAFT AI studio ready');
+    })();
+    </script>
+</body>
+</html>

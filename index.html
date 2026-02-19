@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MEMECRAFT AI — Premium AI-powered meme and poster creator. Generate viral memes and elegant posters with style.">
+    <meta property="og:title" content="MEMECRAFT AI — Create Viral Memes & Posters">
+    <meta property="og:description" content="AI-powered meme and poster generator that keeps the meme soul, but gives it a luxury look.">
+    <title>MEMECRAFT AI · AI poster & meme creator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;1,14..32,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 Free (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Page-specific only */
+        @keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-item { animation: countUp 0.5s ease forwards; }
+
+        /* hero prompt input glow */
+        #hero-prompt:focus { box-shadow: 0 0 0 3px rgba(251,191,36,0.35); outline: none; border-color: #fbbf24; }
+
+        /* template preview thumbnail */
+        .template-thumb {
+            transition: all 0.25s cubic-bezier(0.2,0,0,1);
+        }
+        .template-thumb:hover { transform: scale(1.04) translateY(-5px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.18); }
+
+        /* FAQ accordion */
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.2s ease; }
+        .faq-item.open .faq-answer { max-height: 200px; padding-top: 0.75rem; }
+        .faq-item.open .faq-chevron { transform: rotate(180deg); }
+        .faq-chevron { transition: transform 0.25s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-gray-800 antialiased overflow-x-hidden">
+
+    <!-- Shared nav -->
+    <div id="nav-root"></div>
+
+    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+
+        <!-- ===== HERO ===== -->
+        <section class="flex flex-col lg:flex-row items-center gap-10 mb-20">
+            <div class="flex-1 text-center lg:text-left space-y-5">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-white/70 border border-amber-200 text-amber-700 text-sm font-medium premium-blur meme-float origin-left">
+                    <i class="fa-regular fa-gem mr-2"></i> premium AI meme · poster lab
+                </div>
+                <h1 class="font-meme text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+                    create <span class="bg-gradient-to-r from-amber-500 to-pink-500 bg-clip-text text-transparent [text-shadow:2px_2px_0_#fde68a]">viral</span><br>
+                    memes &amp; posters<br>
+                    with <span class="underline decoration-amber-400 decoration-4 underline-offset-8">class</span>
+                </h1>
+                <p class="text-lg text-gray-600 max-w-xl mx-auto lg:mx-0">AI-powered generator that keeps the meme soul, but gives it a luxury look.</p>
+
+                <!-- REAL hero prompt input -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2 max-w-xl mx-auto lg:mx-0">
+                    <input
+                        id="hero-prompt"
+                        type="text"
+                        placeholder="e.g. distracted boyfriend but classy..."
+                        class="flex-1 bg-white/80 border border-amber-200 rounded-2xl px-5 py-3.5 text-sm placeholder:text-gray-400 focus:outline-none transition-all"
+                        aria-label="Meme prompt"
+                    >
+                    <button
+                        id="hero-cta"
+                        onclick="goToStudio()"
+                        class="group relative px-7 py-3.5 bg-black text-white rounded-2xl font-semibold text-sm shadow-xl hover-lift hover-glow flex items-center gap-2 justify-center transition-all whitespace-nowrap"
+                        aria-label="Start creating"
+                    >
+                        <i class="fa-regular fa-face-grin-wink text-amber-300 group-hover:rotate-12 transition"></i>
+                        start creating
+                        <span class="absolute -top-2 -right-2 bg-amber-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">AI</span>
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-2 justify-center lg:justify-start">
+                    <button class="quick-pill suggestion-pill px-3 py-1.5 rounded-full text-xs font-meme" data-prompt="cat meme with sunglasses">😎 cat with sunglasses</button>
+                    <button class="quick-pill suggestion-pill px-3 py-1.5 rounded-full text-xs font-meme" data-prompt="jazz night poster minimal">🎷 jazz night poster</button>
+                    <button class="quick-pill suggestion-pill px-3 py-1.5 rounded-full text-xs font-meme" data-prompt="drake hotline bling meme">🕺 drake meme</button>
+                </div>
+
+                <!-- mini emoji row -->
+                <div class="flex gap-3 pt-4 text-3xl justify-center lg:justify-start">
+                    <span class="hover-wiggle inline-block cursor-default transition-all hover:text-amber-500" aria-hidden="true"><i class="fa-regular fa-face-laugh-beam"></i></span>
+                    <span class="hover-wiggle inline-block cursor-default transition-all hover:text-amber-500" aria-hidden="true"><i class="fa-regular fa-face-rolling-eyes"></i></span>
+                    <span class="hover-wiggle inline-block cursor-default transition-all hover:text-pink-400" aria-hidden="true"><i class="fa-regular fa-face-kiss-wink-heart"></i></span>
+                    <span class="hover-wiggle inline-block cursor-default transition-all hover:text-indigo-400" aria-hidden="true"><i class="fa-regular fa-face-smile-wink"></i></span>
+                </div>
+            </div>
+
+            <!-- Right: Meme preview card -->
+            <div class="flex-1 relative flex justify-center items-center">
+                <div class="relative w-72 h-80 md:w-80 lg:w-96">
+                    <div class="absolute -top-6 -left-6 w-28 h-28 bg-amber-300/30 rounded-full blur-2xl animate-pulse" aria-hidden="true"></div>
+                    <div class="absolute -bottom-4 -right-4 w-40 h-40 bg-purple-300/40 rounded-full blur-3xl" aria-hidden="true"></div>
+                    <div class="relative meme-shine hover-lift hover:rotate-[0.5deg] transition-all duration-300 bg-white/40 border border-white/70 rounded-3xl shadow-2xl p-5 backdrop-blur-sm">
+                        <div class="bg-white/80 rounded-2xl p-4 border border-white">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold text-gray-500"><i class="fa-regular fa-clock mr-1"></i>AI generated</span>
+                                <span class="px-2 py-1 bg-amber-200 text-amber-800 text-xs rounded-full font-meme">trending</span>
+                            </div>
+                            <div class="relative bg-gradient-to-br from-amber-100 to-pink-100 rounded-xl p-4 flex flex-col items-center">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23fcd34d' /%3E%3Ccircle cx='12' cy='14' r='3' fill='%231f2937'/%3E%3Ccircle cx='28' cy='14' r='3' fill='%231f2937'/%3E%3Cpath d='M12 26 Q20 34, 28 26' stroke='%234b5563' stroke-width='2.5' fill='none' stroke-linecap='round' /%3E%3C/svg%3E" class="w-20 h-20 meme-float" alt="Sample meme face" width="80" height="80">
+                                <span class="font-meme font-bold text-lg mt-1">when AI makes it classy</span>
+                                <span class="text-xs text-gray-500">✨ premium meme ✨</span>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <p class="text-sm font-medium border-t border-dashed border-gray-300 pt-2">"distinguished vibes only"</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute -right-6 top-10 text-5xl rotate-12 hover:rotate-0 transition-all duration-300 cursor-default hover:scale-125" aria-hidden="true">😎</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SOCIAL PROOF ===== -->
+        <section class="mb-16 grid grid-cols-2 sm:grid-cols-4 gap-4" aria-label="Statistics">
+            <div class="stat-item glass-premium rounded-2xl p-5 text-center border border-white/70">
+                <p class="font-meme text-3xl font-bold text-amber-600">2.4M+</p>
+                <p class="text-xs text-gray-500 mt-1">memes created</p>
+            </div>
+            <div class="stat-item glass-premium rounded-2xl p-5 text-center border border-white/70" style="animation-delay:0.1s">
+                <p class="font-meme text-3xl font-bold text-pink-500">18k+</p>
+                <p class="text-xs text-gray-500 mt-1">active creators</p>
+            </div>
+            <div class="stat-item glass-premium rounded-2xl p-5 text-center border border-white/70" style="animation-delay:0.2s">
+                <p class="font-meme text-3xl font-bold text-indigo-500">3</p>
+                <p class="text-xs text-gray-500 mt-1">AI modes</p>
+            </div>
+            <div class="stat-item glass-premium rounded-2xl p-5 text-center border border-white/70" style="animation-delay:0.3s">
+                <p class="font-meme text-3xl font-bold text-amber-600">20+</p>
+                <p class="text-xs text-gray-500 mt-1">templates</p>
+            </div>
+        </section>
+
+        <!-- ===== DIVIDER ===== -->
+        <div class="w-full h-1 meme-divider rounded-full my-10 opacity-60" aria-hidden="true"></div>
+
+        <!-- ===== FEATURES ===== -->
+        <section class="mb-20" aria-labelledby="features-heading">
+            <h2 id="features-heading" class="font-meme text-3xl md:text-4xl font-bold mb-8 flex items-center gap-3">
+                <i class="fa-regular fa-object-group text-amber-500" aria-hidden="true"></i>
+                AI poster &amp; meme
+                <span class="text-amber-500 bg-amber-100 px-4 py-1.5 rounded-full text-base font-normal tracking-wide">hover magic</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+                <!-- Meme Studio -->
+                <a href="studio.html?mode=meme" class="group relative glass-premium rounded-3xl p-6 border border-white/80 hover-lift meme-shine flex flex-col no-underline text-inherit">
+                    <div class="flex items-center gap-2 text-amber-600 text-2xl mb-4">
+                        <i class="fa-regular fa-face-grin-tongue-wink" aria-hidden="true"></i>
+                        <span class="font-meme font-medium text-base text-gray-700">meme studio</span>
+                    </div>
+                    <p class="text-gray-600 text-sm flex-1">Turn any text into a gold-meme with AI captions. Classy impact font included.</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-xs bg-white/60 px-3 py-1 rounded-full">🔥 1k+ memes/h</span>
+                        <span class="text-amber-500 text-xs font-meme opacity-0 group-hover:opacity-100 transition-opacity">try it →</span>
+                    </div>
+                    <i class="fa-regular fa-face-laugh-beam absolute bottom-3 right-4 text-3xl text-amber-300 group-hover:scale-125 group-hover:rotate-12 transition-all" aria-hidden="true"></i>
+                </a>
+
+                <!-- Poster Lab -->
+                <a href="studio.html?mode=poster" class="group relative glass-premium rounded-3xl p-6 border border-white/80 hover-lift meme-shine flex flex-col no-underline text-inherit">
+                    <div class="flex items-center gap-2 text-pink-500 text-2xl mb-4">
+                        <i class="fa-regular fa-rectangle-ad" aria-hidden="true"></i>
+                        <span class="font-meme font-medium text-base text-gray-700">poster lab</span>
+                    </div>
+                    <p class="text-gray-600 text-sm flex-1">Design minimal yet viral posters. AI suggests layout &amp; color palette.</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-xs bg-white/60 px-3 py-1 rounded-full">⭐ 20 templates</span>
+                        <span class="text-pink-400 text-xs font-meme opacity-0 group-hover:opacity-100 transition-opacity">try it →</span>
+                    </div>
+                    <i class="fa-regular fa-image absolute bottom-3 right-4 text-3xl text-pink-300 group-hover:scale-125 transition-all" aria-hidden="true"></i>
+                </a>
+
+                <!-- Remix -->
+                <a href="studio.html?mode=remix" class="group relative glass-premium rounded-3xl p-6 border border-white/80 hover-lift meme-shine flex flex-col no-underline text-inherit">
+                    <div class="flex items-center gap-2 text-indigo-400 text-2xl mb-4">
+                        <i class="fa-solid fa-wand-sparkles" aria-hidden="true"></i>
+                        <span class="font-meme font-medium text-base text-gray-700">remix</span>
+                    </div>
+                    <p class="text-gray-600 text-sm flex-1">Upload your meme &amp; let AI make it "haute couture". Style transfer magic.</p>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-xs bg-white/60 px-3 py-1 rounded-full">✨ style transfer</span>
+                        <span class="text-indigo-400 text-xs font-meme opacity-0 group-hover:opacity-100 transition-opacity">try it →</span>
+                    </div>
+                    <i class="fa-solid fa-bolt absolute bottom-3 right-4 text-3xl text-indigo-300 group-hover:scale-125 transition-all" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- ===== TEMPLATE PREVIEW STRIP ===== -->
+        <section class="mb-20" aria-labelledby="templates-heading">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="templates-heading" class="font-meme text-2xl md:text-3xl font-bold flex items-center gap-2">
+                    <i class="fa-regular fa-layer-group text-amber-500" aria-hidden="true"></i> popular templates
+                </h2>
+                <a href="templates.html" class="text-sm text-amber-600 hover:text-amber-700 font-medium hover:underline">view all →</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory" style="scrollbar-width: thin;">
+                <!-- Template cards -->
+                <a href="studio.html?mode=meme&prompt=distracted+boyfriend+classy" class="template-thumb flex-shrink-0 w-44 snap-start glass-premium rounded-2xl p-3 border border-amber-200/60 cursor-pointer no-underline text-inherit">
+                    <div class="aspect-square rounded-xl bg-gradient-to-br from-amber-100 to-yellow-50 flex items-center justify-center text-4xl mb-2">😎</div>
+                    <span class="font-meme text-xs font-bold block">distracted BF</span>
+                    <span class="text-[10px] text-gray-400">classic meme</span>
+                </a>
+                <a href="studio.html?mode=poster&prompt=jazz+night+poster" class="template-thumb flex-shrink-0 w-44 snap-start glass-premium rounded-2xl p-3 border border-pink-200/60 cursor-pointer no-underline text-inherit">
+                    <div class="aspect-square rounded-xl bg-gradient-to-br from-pink-100 to-rose-50 flex items-center justify-center text-4xl mb-2">🎷</div>
+                    <span class="font-meme text-xs font-bold block">jazz night</span>
+                    <span class="text-[10px] text-gray-400">minimal poster</span>
+                </a>
+                <a href="studio.html?mode=meme&prompt=drake+hotline+bling" class="template-thumb flex-shrink-0 w-44 snap-start glass-premium rounded-2xl p-3 border border-amber-200/60 cursor-pointer no-underline text-inherit">
+                    <div class="aspect-square rounded-xl bg-gradient-to-br from-amber-200 to-orange-50 flex items-center justify-center text-4xl mb-2">🕺</div>
+                    <span class="font-meme text-xs font-bold block">drake bling</span>
+                    <span class="text-[10px] text-gray-400">classic meme</span>
+                </a>
+                <a href="studio.html?mode=remix&prompt=vaporwave+style" class="template-thumb flex-shrink-0 w-44 snap-start glass-premium rounded-2xl p-3 border border-indigo-200/60 cursor-pointer no-underline text-inherit">
+                    <div class="aspect-square rounded-xl bg-gradient-to-br from-indigo-100 to-purple-50 flex items-center justify-center text-4xl mb-2">🌊</div>
+                    <span class="font-meme text-xs font-bold block">vaporwave</span>
+                    <span class="text-[10px] text-gray-400">remix style</span>
+                </a>
+                <a href="templates.html" class="template-thumb flex-shrink-0 w-44 snap-start glass-premium rounded-2xl p-3 border border-gray-200/60 cursor-pointer no-underline text-inherit flex flex-col items-center justify-center">
+                    <div class="text-3xl text-amber-400 mb-1"><i class="fa-regular fa-plus-square" aria-hidden="true"></i></div>
+                    <span class="font-meme text-xs font-bold text-center">view all templates →</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ===== FAQ ===== -->
+        <section class="mb-20 max-w-2xl mx-auto" aria-labelledby="faq-heading">
+            <h2 id="faq-heading" class="font-meme text-2xl md:text-3xl font-bold mb-6 text-center">
+                <i class="fa-regular fa-circle-question text-amber-500 mr-2" aria-hidden="true"></i>FAQ
+            </h2>
+            <div class="space-y-3" id="faq-list">
+                <div class="faq-item glass-premium rounded-2xl border border-white/70 overflow-hidden">
+                    <button class="faq-btn w-full flex items-center justify-between px-5 py-4 text-left font-meme font-medium text-sm" aria-expanded="false">
+                        Is it free to use?
+                        <i class="fa-solid fa-chevron-down faq-chevron text-amber-500 text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div class="faq-answer px-5 pb-0">
+                        <p class="text-sm text-gray-600 pb-4">Yes — the core meme and poster studio is free. Premium templates and batch export are part of the Plus plan.</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-premium rounded-2xl border border-white/70 overflow-hidden">
+                    <button class="faq-btn w-full flex items-center justify-between px-5 py-4 text-left font-meme font-medium text-sm" aria-expanded="false">
+                        Can I export my creations?
+                        <i class="fa-solid fa-chevron-down faq-chevron text-amber-500 text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div class="faq-answer px-5 pb-0">
+                        <p class="text-sm text-gray-600 pb-4">Absolutely. Every generated image can be downloaded as a high-quality PNG directly from the studio.</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-premium rounded-2xl border border-white/70 overflow-hidden">
+                    <button class="faq-btn w-full flex items-center justify-between px-5 py-4 text-left font-meme font-medium text-sm" aria-expanded="false">
+                        What AI model powers it?
+                        <i class="fa-solid fa-chevron-down faq-chevron text-amber-500 text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div class="faq-answer px-5 pb-0">
+                        <p class="text-sm text-gray-600 pb-4">MEMECRAFT AI uses a fine-tuned diffusion model optimized for meme aesthetics and poster layouts, via your own backend API.</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-premium rounded-2xl border border-white/70 overflow-hidden">
+                    <button class="faq-btn w-full flex items-center justify-between px-5 py-4 text-left font-meme font-medium text-sm" aria-expanded="false">
+                        Are my creations saved?
+                        <i class="fa-solid fa-chevron-down faq-chevron text-amber-500 text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div class="faq-answer px-5 pb-0">
+                        <p class="text-sm text-gray-600 pb-4">Yes — your gallery is stored locally in your browser via IndexedDB. Nothing is uploaded to our servers unless you choose to share.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CTA ===== -->
+        <section class="mt-6 text-center p-10 rounded-3xl glass-premium border border-white/60 relative overflow-hidden meme-shine mb-10">
+            <h3 class="font-meme text-4xl font-bold mb-3">get classy, get memey</h3>
+            <p class="text-gray-700 max-w-md mx-auto mb-6">Join the premium AI meme revolution. no cringe, only class.</p>
+            <a href="studio.html" class="bg-amber-400 hover:bg-amber-500 text-black font-semibold px-10 py-4 rounded-full text-lg shadow-lg hover-lift hover-glow transition-all flex items-center gap-3 mx-auto w-fit">
+                <i class="fa-regular fa-face-smile" aria-hidden="true"></i>
+                create your first meme
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </a>
+            <i class="fa-regular fa-star absolute top-4 left-10 text-2xl text-amber-300 animate-spin-slow" aria-hidden="true"></i>
+            <i class="fa-regular fa-comment absolute bottom-4 right-10 text-4xl text-amber-200/70 rotate-12" aria-hidden="true"></i>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-4 py-5 text-sm text-gray-500 flex flex-wrap justify-between items-center gap-2">
+        <span>© 2025 · MEMECRAFT AI — all rights reserved</span>
+        <nav class="flex gap-4 text-xs" aria-label="Footer links">
+            <a href="studio.html" class="hover:text-amber-600 transition-colors">Studio</a>
+            <a href="gallery.html" class="hover:text-amber-600 transition-colors">Gallery</a>
+            <a href="templates.html" class="hover:text-amber-600 transition-colors">Templates</a>
+        </nav>
+        <span class="flex gap-3 text-lg">
+            <i class="fa-regular fa-heart hover:text-amber-500 cursor-pointer hover-wiggle transition-colors" aria-hidden="true"></i>
+            <i class="fa-regular fa-face-laugh-squint hover:text-amber-500 cursor-pointer hover-wiggle transition-colors" aria-hidden="true"></i>
+        </span>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="nav.js"></script>
+    <script>
+        // Init nav
+        renderNav('home');
+
+        // Hero prompt → studio redirect
+        function goToStudio() {
+            const val = document.getElementById('hero-prompt').value.trim();
+            const url = val ? `studio.html?prompt=${encodeURIComponent(val)}` : 'studio.html';
+            window.location.href = url;
+        }
+
+        // Enter key on hero input
+        document.getElementById('hero-prompt').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') goToStudio();
+        });
+
+        // Quick pill clicks
+        document.querySelectorAll('.quick-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('hero-prompt').value = btn.dataset.prompt;
+                goToStudio();
+            });
+        });
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.closest('.faq-item');
+                const isOpen = item.classList.contains('open');
+                // Close all
+                document.querySelectorAll('.faq-item').forEach(i => {
+                    i.classList.remove('open');
+                    i.querySelector('.faq-btn').setAttribute('aria-expanded', 'false');
+                });
+                // Toggle clicked
+                if (!isOpen) {
+                    item.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        // Subtle parallax on hero h1
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 5;
+            const y = (e.clientY / window.innerHeight - 0.5) * 5;
+            const hero = document.querySelector('h1');
+            if (hero) hero.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+
+        console.log('✨ MEMECRAFT AI landing ready');
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* ==================== MEMECRAFT AI — SHARED STYLES ==================== */
+
+/* --- Fonts --- */
+* { font-family: 'Inter', system-ui, sans-serif; }
+.font-meme { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+
+/* --- Glassmorphism --- */
+.premium-blur { backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); }
+.glass-premium { background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.7); }
+
+/* --- Background --- */
+body {
+    background-color: #faf7f2;
+    background-image:
+        radial-gradient(circle at 30% 30%, rgba(255,225,140,0.15) 0%, transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(190,230,255,0.2) 0%, transparent 40%);
+}
+
+/* --- Animations --- */
+@keyframes float {
+    0%   { transform: translateY(0px) rotate(0deg); }
+    50%  { transform: translateY(-8px) rotate(0.5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+.meme-float { animation: float 5s ease-in-out infinite; }
+
+@keyframes wiggle {
+    0%,100% { transform: rotate(0deg); }
+    25%      { transform: rotate(2deg); }
+    75%      { transform: rotate(-2deg); }
+}
+.hover-wiggle:hover { animation: wiggle 0.2s ease-in-out; }
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin 8s linear infinite; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* --- Hover Effects --- */
+.hover-lift { transition: all 0.2s cubic-bezier(0.2,0,0,1); }
+.hover-lift:hover { transform: scale(1.02) translateY(-4px); box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15); }
+
+.hover-glow { transition: box-shadow 0.2s, border-color 0.2s; }
+.hover-glow:hover { box-shadow: 0 0 0 3px rgba(251,191,36,0.3), 0 10px 20px -10px rgba(0,0,0,0.2); border-color: #fbbf24; }
+
+/* --- Meme Shine --- */
+.meme-shine { position: relative; overflow: hidden; }
+.meme-shine::after {
+    content: ''; position: absolute; top: -50%; left: -60%; width: 200%; height: 200%;
+    background: linear-gradient(115deg, rgba(255,255,255,0) 20%, rgba(255,255,240,0.3) 50%, rgba(255,255,255,0) 80%);
+    transform: rotate(25deg); transition: left 0.4s ease-out; pointer-events: none;
+}
+.meme-shine:hover::after { left: 100%; }
+
+/* --- Meme Divider --- */
+.meme-divider { background: repeating-linear-gradient(45deg, #fcd34d, #fcd34d 12px, #fbbf24 12px, #fbbf24 24px); }
+
+/* --- Loading Spinner --- */
+.loading-spinner {
+    border: 3px solid #fef3c7;
+    border-top: 3px solid #f59e0b;
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+/* --- Toast --- */
+#mode-toast {
+    position: fixed; top: 5rem; left: 50%; transform: translateX(-50%);
+    z-index: 9999; padding: 0.5rem 1.25rem; border-radius: 9999px;
+    font-size: 0.875rem; font-family: 'Space Grotesk', sans-serif;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+    backdrop-filter: blur(8px); background: rgba(217,119,6,0.95); color: white;
+    transition: opacity 0.3s ease; opacity: 0; pointer-events: none;
+}
+#mode-toast.show { opacity: 1; }
+
+/* --- Navigation active link --- */
+.nav-link[aria-current="page"] { pointer-events: none; }
+
+/* --- Footer --- */
+footer {
+    flex-shrink: 0; position: relative; z-index: 10;
+    border-top: 1px solid rgba(251,191,36,0.3);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #fef3c7; border-radius: 12px; }
+::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 12px; }
+
+/* --- Hover (only on pointer devices) --- */
+@media (hover: hover) {
+    .hover-lift:hover { transform: scale(1.02) translateY(-4px); box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15); }
+}
+@media (hover: none) {
+    .hover-lift:hover { transform: none; box-shadow: none; }
+    .meme-shine::after { display: none; }
+    .hover-wiggle:hover { animation: none; }
+}

@@ -30,7 +30,7 @@ function renderNav(activePage = 'home') {
                         ? 'bg-black text-white shadow-md'
                         : 'bg-white/60 text-gray-700 border border-gray-200 hover:bg-white hover:text-amber-600'}"
                aria-current="${activePage === p.id ? 'page' : 'false'}">
-                <i class="fa-regular ${p.icon} text-xs sm:text-sm"></i>
+                <i class="fa-solid ${p.icon} text-xs sm:text-sm"></i>
                 <span class="hidden xs:inline sm:inline">${p.label}</span>
             </a>`).join('')}
         </nav>

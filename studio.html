@@ -406,8 +406,8 @@
 
             try {
                 const wakeTimeout = setTimeout(() => {
-                    appendMessage('ai', '⏳ waking up server (free tier cold start, ~30s)...', true);
-                }, 5000); // shows message if no response after 5s
+                    appendMessage('ai', '⏳ waking up server please wait...', true);
+                }, 10000); // shows message if no response after 10s
 
                 const response = await fetch(MEMECRAFT_CONFIG.generateURL, {
                     method: 'POST',

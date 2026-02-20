@@ -5,7 +5,7 @@ const MEMECRAFT_CONFIG = (() => {
                     window.location.hostname === '127.0.0.1';
 
     // Replace this with your actual Render service URL
-    const RENDER_URL = 'https://your-service-name.onrender.com';
+    const RENDER_URL = 'https://memecraft-backend.onrender.com';
 
     const BASE = isLocal ? 'http://127.0.0.1:8000' : RENDER_URL;
 

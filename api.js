@@ -1,20 +1,20 @@
 // ==================== MEMECRAFT AI — SHARED API CONFIG ====================
-const MEMECRAFT_CONFIG = {
-    // Change this to your production URL when deploying
-    API_BASE_URL:
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
-        ? 'http://127.0.0.1:8000'
-        : 'https://memecraft-backend.onrender.com',
+// ==================== MEMECRAFT AI — SHARED API CONFIG ====================
+const MEMECRAFT_CONFIG = (() => {
+    const isLocal = window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1';
 
-    API_ENDPOINTS: {
-        generate: '/api/generate/',
-    },
+    // Replace this with your actual Render service URL
+    const RENDER_URL = 'https://your-service-name.onrender.com';
 
-    get generateURL() {
-        return this.API_BASE_URL + this.API_ENDPOINTS.generate;
-    }
-};
+    const BASE = isLocal ? 'http://127.0.0.1:8000' : RENDER_URL;
+
+    return {
+        generateURL: `${BASE}/api/generate/`,
+        isLocal,
+        BASE
+    };
+})();
 
 // ==================== INDEXED DB SHARED SETUP ====================
 const MemecraftDB = (() => {

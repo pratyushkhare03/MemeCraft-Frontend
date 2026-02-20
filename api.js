@@ -1,9 +1,11 @@
 // ==================== MEMECRAFT AI — SHARED API CONFIG ====================
 const MEMECRAFT_CONFIG = {
     // Change this to your production URL when deploying
-    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    API_BASE_URL:
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
         ? 'http://127.0.0.1:8000'
-        : '/api',  // relative path for production
+        : 'https://memecraft-backend.onrender.com',
 
     API_ENDPOINTS: {
         generate: '/api/generate/',
